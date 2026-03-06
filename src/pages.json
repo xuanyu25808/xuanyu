@@ -1,12 +1,46 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
 		{
-			"path": "pages/index/index",
+			"path": "pages/menu/index",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationBarTitleText": "食物"
+			}
+		},
+		{
+			"path": "pages/recipe/index",
+			"style": {
+				"navigationBarTitleText": "点菜"
+			}
+		},
+		{
+			"path": "pages/person/index",
+			"style": {
+				"navigationBarTitleText": "我的"
 			}
 		}
 	],
+	"tabBar": {
+		"list": [
+			{
+				"pagePath": "pages/menu/index",
+				"iconPath": "static/icons/1.png",
+				"selectedIconPath": "static/icons/1.png",
+				"text": "食物"
+			},
+			{
+				"pagePath": "pages/recipe/index",
+				"iconPath": "static/icons/1.png",
+				"selectedIconPath": "static/icons/1.png",
+				"text": "点菜"
+			},
+			{
+				"pagePath": "pages/person/index",
+				"iconPath": "static/icons/1.png",
+				"selectedIconPath": "static/icons/1.png",
+				"text": "我的"
+			}
+		]
+	},
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",

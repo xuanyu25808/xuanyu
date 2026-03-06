@@ -13,5 +13,12 @@
 </script>
 
 <style>
-	/*每个页面公共css */
+	/* 每个页面公共css */
+
+	/* 隐藏 H5 / App 端滚动条，保留滚动功能 */
+	::-webkit-scrollbar {
+		width: 0;
+		height: 0;
+		background: transparent;
+	}
 </style>
