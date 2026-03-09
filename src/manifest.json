@@ -58,7 +58,9 @@
 		"setting": {
 			"urlCheck": false
 		},
-		"usingComponents": true
+		"usingComponents": true,
+		"cloudfunctionRoot": "cloudfunctions/", /* 云函数根目录，相对于项目根目录 */
+		"cloudbaseRoot": "cloudbase/" /* 云开发静态资源根目录（可选） */
 	},
 	"mp-alipay" : {
         "usingComponents" : true

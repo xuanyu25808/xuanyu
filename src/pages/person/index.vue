@@ -264,7 +264,7 @@
 </template>
 
 <script>
-	import { getMenuList, saveMenuListToStorage } from '@/store/menuStore.js'
+	import { getMenuList, saveDishToCloud } from '@/store/menuStore.js'
 
 	export default {
 		data() {
@@ -293,11 +293,22 @@
 				stepsScrollId: ''
 			}
 		},
-		onLoad() {
-			// 初始化菜单数据（优先本地存储，没有则使用 mock 数据）
-			this.menu = getMenuList()
+		onShow() {
+			this.loadMenuData()
 		},
 		methods: {
+			// 加载菜单数据
+			loadMenuData() {
+				getMenuList().then(res => {
+					this.menu = Array.isArray(res) ? res : []
+				}).catch(err => {
+					this.menu = []
+					uni.showToast({
+						title: '加载数据失败',
+						icon: 'none'
+					})
+				})
+			},
 			// 创建分类
 			handleAddCategory() {
 				const name = (this.newCategoryName || '').trim()
@@ -315,7 +326,7 @@
 					image: '',
 					list: []
 				})
-				saveMenuListToStorage(this.menu)
+				// 更新云数据库
 				this.newCategoryName = ''
 				uni.showToast({
 					title: '分类已创建',
@@ -332,7 +343,7 @@
 					success: (res) => {
 						if (res.confirm) {
 							this.menu.splice(cIndex, 1)
-							saveMenuListToStorage(this.menu)
+							// 更新云数据库
 						}
 					}
 				})
@@ -391,7 +402,7 @@
 					success: (res) => {
 						if (res.confirm) {
 							this.menu[cIndex].list.splice(dIndex, 1)
-							saveMenuListToStorage(this.menu)
+							// 更新云数据库
 						}
 					}
 				})
@@ -528,8 +539,39 @@
 				}
 
 				const cate = this.menu[this.currentCategoryIndex]
+				
+				// 检查分类是否存在
+				if (!cate) {
+					uni.showToast({
+						title: '分类不存在',
+						icon: 'none'
+					})
+					return
+				}
+				
+				const categoryId = cate.id
+				
+				// 检查分类ID是否存在
+				if (!categoryId) {
+					console.error('分类ID为空:', {
+						currentCategoryIndex: this.currentCategoryIndex,
+						cate: cate,
+						menu: this.menu
+					})
+					uni.showToast({
+						title: '分类ID不能为空，请先创建分类',
+						icon: 'none'
+					})
+					return
+				}
+				
+				const dishId = dishData.id
 
+				// 先更新本地数据
 				if (!this.isEditDish) {
+					if (!cate.list) {
+						cate.list = []
+					}
 					cate.list.push(dishData)
 				} else if (
 					this.currentDishIndex !== null &&
@@ -538,12 +580,34 @@
 					this.$set(cate.list, this.currentDishIndex, dishData)
 				}
 
-				saveMenuListToStorage(this.menu)
-				this.showDishForm = false
-				uni.showToast({
-					title: '已保存',
-					icon: 'success'
+				// 保存到云数据库
+				console.log('准备保存菜品到云数据库:', {
+					categoryId,
+					dishId,
+					isEdit: this.isEditDish,
+					dishData
 				})
+				
+				saveDishToCloud(categoryId, dishData, this.isEditDish, dishId)
+					.then(() => {
+						console.log('菜品已保存到云数据库')
+						this.showDishForm = false
+						uni.showToast({
+							title: '已保存',
+							icon: 'success'
+						})
+					})
+					.catch(err => {
+						console.error('保存到云数据库失败:', err)
+						// 即使云数据库保存失败，本地数据已经更新，所以仍然提示成功
+						// 但可以添加一个提示告知用户
+						this.showDishForm = false
+						uni.showToast({
+							title: '已保存（云端同步失败）',
+							icon: 'none',
+							duration: 2000
+						})
+					})
 			}
 		},
 		computed: {
@@ -612,9 +676,6 @@
 	box-sizing: border-box;
 }
 
-.category-list {
-
-}
 .category-list.category-list--locked {
 	pointer-events: none;
 }

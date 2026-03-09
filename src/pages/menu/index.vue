@@ -110,13 +110,18 @@ export default {
 		}
 	},
 	onShow() {
-		// 加载菜单数据
-		this.leftInfo.menuList = getMenuList()
-		// 加载已点菜品数据
-		this.loadOrdered()
-		this.$nextTick(() => {
-			// 计算距离
-			this.calcSectionTops()
+		// 加载菜单数据（从云数据库获取）
+		getMenuList().then(menuList => {
+			this.leftInfo.menuList = menuList
+			// 加载已点菜品数据
+			this.loadOrdered()
+			this.$nextTick(() => {
+				// 计算距离
+				this.calcSectionTops()
+			})
+		}).catch(err => {
+			console.error('加载菜单数据失败:', err)
+			this.leftInfo.menuList = []
 		})
 	},
 	onHide() {
@@ -152,8 +157,6 @@ export default {
 			query.selectAll('.js-group').boundingClientRect()
 			query.exec((res) => {
 				if (!res || res.length < 2) return
-				console.log('res', res);
-
 				const containerRect = res[0]
 				const groupRects = res[1] || []
 				// 容器距离视口顶部的距离
